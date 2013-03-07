@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Circle Testing</title>
+	<script type="text/javascript" src="js/paper.js"></script>
+	<script type="text/paperscript" canvas="canvas1">
+		var topLeft = new Point(200, 200);
+		var size = new Size(150, 100);
+		var rectangle = new Rectangle(topLeft, size);
+		var path = new Path.Ellipse(rectangle);
+		path.fillColor = '#628FCB';
+		
+		var topLeft = new Point(5, 400);
+		var size = new Size(100, 50);
+		var rectangle = new Rectangle(topLeft, size);
+		var path = new Path.Ellipse(rectangle);
+		path.fillColor = '#547750';
+		
+		var path = new Path.Circle(new Point(50, 50), 25);
+		path.fillColor = '#ECDFC6';
+		
+		var topLeft = new Point(10, 10);
+		var xText = new PointText(topLeft);
+		xText.justification = 'left';
+		xText.fillColor = 'black';
+		
+		var topLeft = new Point(10, 22);
+		var yText = new PointText(topLeft);
+		yText.justification = 'left';
+		yText.fillColor = 'black';
+		
+		function updateText(point){
+			xText.content = 'x = ' + point.x;
+			yText.content = 'y = ' + point.y;
+		}
+		
+		function onMouseDown(event){
+			updateText(event.point);
+		}
+		
+		function onMouseDrag(event) {
+			updateText(event.point);
+		}
+	</script>
+</head>
+<body bgcolor="#ABDDED">
+	<canvas id="canvas1" resize></canvas>
+</body>
+</html>
