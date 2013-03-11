@@ -4,44 +4,77 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Circle Testing</title>
 	<script type="text/javascript" src="js/paper.js"></script>
-	<script type="text/paperscript" canvas="canvas1">
-		var topLeft = new Point(200, 200);
-		var size = new Size(150, 100);
-		var rectangle = new Rectangle(topLeft, size);
-		var path = new Path.Ellipse(rectangle);
-		path.fillColor = '#628FCB';
-		
-		var topLeft = new Point(5, 400);
-		var size = new Size(100, 50);
-		var rectangle = new Rectangle(topLeft, size);
-		var path = new Path.Ellipse(rectangle);
-		path.fillColor = '#547750';
-		
-		var path = new Path.Circle(new Point(50, 50), 25);
-		path.fillColor = '#ECDFC6';
-		
-		var topLeft = new Point(10, 10);
-		var xText = new PointText(topLeft);
-		xText.justification = 'left';
-		xText.fillColor = 'black';
-		
-		var topLeft = new Point(10, 22);
-		var yText = new PointText(topLeft);
-		yText.justification = 'left';
-		yText.fillColor = 'black';
-		
-		function updateText(point){
-			xText.content = 'x = ' + point.x;
-			yText.content = 'y = ' + point.y;
-		}
-		
-		function onMouseDown(event){
-			updateText(event.point);
-		}
-		
-		function onMouseDrag(event) {
-			updateText(event.point);
-		}
+	<script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript">
+		window.onload = function() {
+	        // Get a reference to the canvas object
+	        var canvas = document.getElementById('canvas1');
+			paper.setup(canvas);
+			
+			var topLeft = new paper.Point(200, 200);
+			var size = new paper.Size(150, 100);
+			var rectangle = new paper.Rectangle(topLeft, size);
+			var path = new paper.Path.Ellipse(rectangle);
+			path.fillColor = '#628FCB';
+			
+			var topLeft = new paper.Point(5, 400);
+			var size = new paper.Size(100, 50);
+			var rectangle = new paper.Rectangle(topLeft, size);
+			var path = new paper.Path.Ellipse(rectangle);
+			path.fillColor = '#547750';
+			
+			var path = new paper.Path.Circle(new paper.Point(50, 50), 25);
+			path.fillColor = '#ECDFC6';
+			
+			var topLeft = new paper.Point(10, 10);
+			var xText = new paper.PointText(topLeft);
+	 		xText.justification = 'left';
+			xText.fillColor = 'black';
+			
+			var topLeft = new paper.Point(10, 22);
+			var yText = new paper.PointText(topLeft);
+			yText.justification = 'left';
+			yText.fillColor = 'black';
+			
+			function updateText(point){
+				xText.content = 'x = ' + point.x;
+				yText.content = 'y = ' + point.y;
+			}
+			
+			var timeText = new paper.PointText(new paper.Point(10, 34));
+			timeText.justification = 'left'
+			timeText.fillColor = 'black'
+			
+			function updateTime(currentTime){
+				timeText.content = currentTime;
+			}
+			
+			function getTime(){
+				$.ajax({
+					url: 'time',
+					data: '',
+					type: 'GET',
+					dataType: 'text',
+				})
+				.done(updateTime)
+				.always(function() {
+					setTimeout(getTime, 1000);
+					});
+			}
+			
+			var tool = new paper.Tool()
+			
+			tool.onMouseDown = function(event){
+				updateText(event.point);
+				$.ajax({
+					url: 'test',
+					data: JSON.stringify(event.point),
+					type: 'POST',
+					dataType: 'json'
+				});
+			}
+			getTime();
+		};
 	</script>
 </head>
 <body bgcolor="#ABDDED">
