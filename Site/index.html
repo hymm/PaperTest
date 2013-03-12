@@ -7,16 +7,16 @@
 	<script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
 	<script type="text/javascript">
 		window.onload = function() {
-	        // Get a reference to the canvas object
-	        var canvas = document.getElementById('canvas1');
+		        // Get a reference to the canvas object
+	        	var canvas = document.getElementById('canvas1');
 			paper.setup(canvas);
-			
+		
 			var topLeft = new paper.Point(200, 200);
 			var size = new paper.Size(150, 100);
 			var rectangle = new paper.Rectangle(topLeft, size);
 			var path = new paper.Path.Ellipse(rectangle);
 			path.fillColor = '#628FCB';
-			
+		
 			var topLeft = new paper.Point(5, 400);
 			var size = new paper.Size(100, 50);
 			var rectangle = new paper.Rectangle(topLeft, size);
@@ -26,27 +26,36 @@
 			var path = new paper.Path.Circle(new paper.Point(50, 50), 25);
 			path.fillColor = '#ECDFC6';
 			
-			var topLeft = new paper.Point(10, 10);
-			var xText = new paper.PointText(topLeft);
-	 		xText.justification = 'left';
-			xText.fillColor = 'black';
+			var timeText = new paper.PointText(new paper.Point(10, 10));
+			timeText.justification = 'left';
+			timeText.fillColor = 'black';
+
+			var maxText = new paper.PointText(new paper.Point(10, 22));
+			maxText.justification = 'left';
+			timeText.fillColor = 'black';
 			
-			var topLeft = new paper.Point(10, 22);
-			var yText = new paper.PointText(topLeft);
-			yText.justification = 'left';
-			yText.fillColor = 'black';
-			
-			function updateText(point){
-				xText.content = 'x = ' + point.x;
-				yText.content = 'y = ' + point.y;
-			}
-			
-			var timeText = new paper.PointText(new paper.Point(10, 34));
-			timeText.justification = 'left'
-			timeText.fillColor = 'black'
-			
+			var countText = new paper.PointText(new paper.Point(10, 34));
+			countText.justification = 'left';
+			countText.fillColor = 'black';
+
+			var prevTime = 0.0;			
+			var maxTime = 0.0;
+			var updateCount = 0;
+
 			function updateTime(currentTime){
-				timeText.content = currentTime;
+				if (prevTime != 0.0) {
+					timeElapsed = currentTime - prevTime;
+					if (timeElapsed > maxTime){
+						maxTime = timeElapsed;
+					}
+				}
+				prevTime = currentTime;
+				var date = new Date(currentTime*1000);
+				timeText.content = date.toString();
+
+				updateCount += 1;
+				
+				paper.view.draw();
 			}
 			
 			function getTime(){
@@ -62,10 +71,9 @@
 					});
 			}
 			
-			var tool = new paper.Tool()
+			var tool = new paper.Tool();
 			
 			tool.onMouseDown = function(event){
-				updateText(event.point);
 				$.ajax({
 					url: 'test',
 					data: JSON.stringify(event.point),

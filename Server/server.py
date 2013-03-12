@@ -1,11 +1,11 @@
 from twisted.web import server, resource
 from twisted.web.static import File
 from twisted.internet import reactor
-import datetime
+import time, json
 
 class TimeJson(resource.Resource):
     def render_GET(self, request):
-        return datetime.datetime.now().ctime()
+        return json.dumps(time.time())
 
 class FormPage(resource.Resource):
     def render_GET(self, request):
@@ -17,7 +17,7 @@ class FormPage(resource.Resource):
         return ''
 
 if __name__ == '__main__':
-    root = File('.')
+    root = File('../Site/.')
     root.putChild('test', FormPage())
     root.putChild('time', TimeJson())
     site = server.Site(root)
