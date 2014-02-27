@@ -6,17 +6,16 @@
 	<script type="text/javascript" src="js/paper.js"></script>
 	<script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
 	<script type="text/javascript">
-		window.onload = function() {
-		        // Get a reference to the canvas object
-	        	var canvas = document.getElementById('canvas1');
+		window.onload = function(){
+	        var canvas = document.getElementById('canvas1');
 			paper.setup(canvas);
-		
+			
 			var topLeft = new paper.Point(200, 200);
 			var size = new paper.Size(150, 100);
 			var rectangle = new paper.Rectangle(topLeft, size);
 			var path = new paper.Path.Ellipse(rectangle);
 			path.fillColor = '#628FCB';
-		
+			
 			var topLeft = new paper.Point(5, 400);
 			var size = new paper.Size(100, 50);
 			var rectangle = new paper.Rectangle(topLeft, size);
@@ -30,21 +29,94 @@
 			timeText.justification = 'left';
 			timeText.fillColor = 'black';
 
-			var maxText = new paper.PointText(new paper.Point(10, 22));
+			var maxText = new paper.PointText(new paper.Point(10.5, 22.5));
 			maxText.justification = 'left';
 			timeText.fillColor = 'black';
 			
-			var countText = new paper.PointText(new paper.Point(10, 34));
+			var countText = new paper.PointText(new paper.Point(10.5, 34.5));
 			countText.justification = 'left';
 			countText.fillColor = 'black';
 
-			var prevTime = 0.0;			
+			var prevTime = 0.0;
 			var maxTime = 0.0;
 			var updateCount = 0;
-
+			
+			var mode = 'select';
+			
+			//define Button class
+			function CtrlButton(topLeft){
+				this.topLeft = topLeft;
+				
+				var buttonSize = 40;
+				var size = new paper.Size(buttonSize, buttonSize);
+				var tempBg = new paper.Path.Rectangle(this.topLeft, size);
+				tempBg.strokeColor = new paper.Color(.2, 1);
+				
+				tempBg.selectedColor = new paper.Color(.95, 1);
+				tempBg.deselectedColor = new paper.Color(.85, 1);
+				tempBg.hoverColor = new paper.Color(0.90, 1); 
+				tempBg.fillColor = tempBg.deselectedColor;
+				tempBg.mode = '';
+				tempBg.onMouseEnter = function(){
+					this.fillColor = this.hoverColor;
+				};
+				tempBg.onMouseLeave = function(){
+					this.fillColor = (mode == this.mode) ? this.selectedColor : this.deselectedColor;
+				};
+				tempBg.onMouseDown = function(){
+					mode = this.mode;
+					this.fillColor = (mode == this.mode) ? this.selectedColor : this.deselectedColor;
+					updateButtons();
+					setToolEvents();
+				};
+				this.bg = tempBg;
+			}	
+			
+			CtrlButton.prototype.update = function(){
+				this.bg.fillColor = (mode == this.bg.mode) ? this.bg.selectedColor : this.bg.deselectedColor;
+			};
+			//end Button class
+			
+			//Select Button inherits from CtrlButton
+			function SelectButton(topLeft){
+				CtrlButton.call(this, topLeft);
+				this.drawArrowIcon(this.topLeft.add(new paper.Point(15, 10)));
+				this.bg.mode = 'select';
+			}
+			SelectButton.prototype = new CtrlButton();
+			
+			SelectButton.prototype.drawArrowIcon = function(location){
+				var segments = [location.add(new paper.Point(0, 0)), location.add(new paper.Point(0, 16)), 
+						location.add(new paper.Point(4, 13)),
+						location.add(new paper.Point(7, 19)), location.add(new paper.Point(10, 18)), 
+						location.add(new paper.Point(7, 12)), 
+						location.add(new paper.Point(12, 12)), location.add(new paper.Point(0, 0))];
+				//var segments = [new Point(30, 30), new Point(100, 100)];
+				var path = new paper.Path(segments);
+				path.strokeColor = 'black';
+				this.icon = path;
+				this.bg.addChild(path);
+			};
+			
+			function ShapeButton(topLeft){
+				CtrlButton.call(this, topLeft);
+				this.drawRectIcon(topLeft.add(new paper.Point(10, 10)));
+				this.bg.mode = 'shape'; 
+			}
+			ShapeButton.prototype = new CtrlButton();
+			
+			ShapeButton.prototype.drawRectIcon = function(topLeft){
+				var rectSize = 20;
+				var size = new paper.Size(rectSize, rectSize);
+				var rect = new paper.Path.Rectangle(topLeft, size);
+				rect.selected = true;
+				this.bg.addChild(rect);
+			};
+			
 			function updateTime(currentTime){
 				if (prevTime != 0.0) {
 					timeElapsed = currentTime - prevTime;
+					maxText.content = timeElapsed.toString();
 					if (timeElapsed > maxTime){
 						maxTime = timeElapsed;
 					}
@@ -54,11 +126,12 @@
 				timeText.content = date.toString();
 
 				updateCount += 1;
+				countText.content = updateCount.toString();
 				
 				paper.view.draw();
 			}
 			
-			function getTime(){
+			function startAjaxTimer(){
 				$.ajax({
 					url: 'time',
 					data: '',
@@ -67,25 +140,125 @@
 				})
 				.done(updateTime)
 				.always(function() {
-					setTimeout(getTime, 1000);
+					setTimeout(startAjaxTimer, 1000);
 					});
 			}
 			
-			var tool = new paper.Tool();
 			
-			tool.onMouseDown = function(event){
+			var tool = new paper.Tool();
+			var tempRect;
+			var segment, path;
+			var movePath = false;
+			var hitOptions = {
+				segments: true,
+				stroke: true,
+				fill: true,
+				tolerance: 5
+			};
+			
+			
+			function ShapeTool(){}
+			ShapeTool.onMouseDown = function(event){
+				startPoint = event.point;
+				tempRect = new paper.Path.Rectangle({topLeft: event.downPoint, bottomRight: event.point});
+				tempRect.selected = true;
+			};
+			ShapeTool.onMouseDrag = function(event){
+				tempRect.remove();
+				tempRect = new paper.Path.Rectangle({topLeft: event.downPoint, bottomRight: event.point});
+				tempRect.selected = true;
+			};
+			ShapeTool.onMouseUp = function(event){
+				tempRect.remove();
+				var rect = new paper.Path.Rectangle({topLeft: event.downPoint, bottomRight: event.point});
+				rect.fillColor = '#ECDFC6';	
+			};
+			
+			function SelectTool(){}
+			SelectTool.onMouseDown = function(event){
+				segment = path = null;
+				var hitResult = paper.project.hitTest(event.point, hitOptions);
+				if (!hitResult)
+					return;
+			
+				if (event.modifiers.shift) {
+					if (hitResult.type == 'segment') {
+						hitResult.segment.remove();
+					};
+					return;
+				}
+	
+				if (hitResult) {
+					path = hitResult.item;
+					if (hitResult.type == 'segment') {
+						segment = hitResult.segment;
+					} else if (hitResult.type == 'stroke') {
+						/*var location = hitResult.location;
+						segment = path.insert(location.index + 1, event.point);
+						path.smooth();*/
+					}
+				}
+				movePath = hitResult.type == 'fill';
+				if (movePath)
+				paper.project.activeLayer.addChild(hitResult.item);
+			};
+			SelectTool.onMouseMove = function(event){
+				if (event.item)
+					paper.project.activeLayer.selected = false;
+					event.item.selected = true;
+			};
+			SelectTool.onMouseDrag = function(event){
+				if (segment) {
+					segment.point = segment.point.add(event.delta);
+					//path.smooth();
+				} else if (path) {
+					path.position = path.position.add(event.delta);
+				}
+			};
+			
+			var selectTool = new SelectTool;
+			function setToolEvents(){
+				tool.onMouseDown = null;
+				tool.onMouseMove = null;
+				tool.onMouseDrag = null;
+				tool.onMouseUp = null;
+				switch(mode){
+					case 'select':
+						tool.onMouseDown = SelectTool.onMouseDown;
+						tool.onMouseMove = SelectTool.onMouseMove;
+						tool.onMouseDrag = SelectTool.onMouseDrag;
+						break;
+					case 'shape':
+						tool.onMouseDown = ShapeTool.onMouseDown;
+						tool.onMouseDrag = ShapeTool.onMouseDrag;
+						tool.onMouseUp = ShapeTool.onMouseUp;
+						break;
+				}
+			}
+			/*tool.onMouseDown = function(event){
 				$.ajax({
 					url: 'test',
 					data: JSON.stringify(event.point),
 					type: 'POST',
 					dataType: 'json'
 				});
+			};*/
+			//drawShapeButton(new paper.Point(10, 46));
+			var selectButton = new SelectButton(new paper.Point(10.5, 46.5));
+			var shapeButton = new ShapeButton(new paper.Point(10.5, 91.5));
+			
+			function updateButtons(){
+				selectButton.update();
+				shapeButton.update();
 			}
-			getTime();
+			
+			setToolEvents();
+			
+			startAjaxTimer();
 		};
 	</script>
 </head>
-<body bgcolor="#ABDDED">
-	<canvas id="canvas1" resize></canvas>
+<body style="background-color:#ABDDED">
+	<canvas id="canvas1" resize>test</canvas>
 </body>
 </html>
