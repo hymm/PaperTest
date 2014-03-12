@@ -177,19 +177,23 @@
 			
 			function ShapeTool(){}
 			ShapeTool.onMouseDown = function(event){
-				if (typeof event.item.isSelectable != "undefined" && !event.item.isSelectable)
+				if (event.item != null && typeof event.item.isSelectable != "undefined" && !event.item.isSelectable)
 					return;
 				startPoint = event.point;
 				tempRect = new paper.Path.Rectangle({topLeft: event.downPoint, bottomRight: event.point});
 				tempRect.selected = true;
 			};
 			ShapeTool.onMouseDrag = function(event){
-				tempRect.remove();
+				if (tempRect != null) {
+					tempRect.remove();	
+				}
 				tempRect = new paper.Path.Rectangle({topLeft: event.downPoint, bottomRight: event.point});
 				tempRect.selected = true;
 			};
 			ShapeTool.onMouseUp = function(event){
-				tempRect.remove();
+				if (tempRect != null) {
+					tempRect.remove();	
+				}
 				var rect = new paper.Path.Rectangle({topLeft: event.downPoint, bottomRight: event.point});
 				rect.fillColor = '#ECDFC6';	
 			};
