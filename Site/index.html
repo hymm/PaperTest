@@ -5,10 +5,15 @@
 	<title>Circle Testing</title>
 	<script type="text/javascript" src="js/paper.js"></script>
 	<script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+	<script type="text/javascript" src="js/codemirror.js"></script>
+	<link rel="stylesheet" href="js/codemirror.css">
+	<script type="text/javascript" src="js/mode/javascript/javascript.js"></script>
 	<script type="text/javascript">
 		window.onload = function(){
 	        var canvas = document.getElementById('canvas1');
 			paper.setup(canvas);
+			
+			paper.project.importSVG("star.svg");
 			
 			var topLeft = new paper.Point(200, 200);
 			var size = new paper.Size(150, 100);
@@ -131,6 +136,25 @@
 				this.bg.addChild(rect);
 			};
 			
+			function SvgButton(topLeft){
+				CtrlButton.call(this, topLeft);
+				this.drawJsIcon(topLeft.add(new paper.Point(9, 9)));
+				this.bg.onMouseDown = null;
+				this.bg.onMouseDown = function(event){
+					var myCodeMirror = CodeMirror(document.body, {
+						value: paper.project.exportSVG({asString: true})
+					});
+				};
+			}
+			
+			SvgButton.prototype.drawJsIcon = function(topLeft){
+				var text = new paper.PointText(topLeft.add(new paper.Point(6, 14)));
+				text.justification = 'center';
+				text.fillColor = 'black';
+				text.content = 'svg';
+				text.isSelectable = false;
+			};
+			
 			function updateTime(currentTime){
 				if (prevTime != 0.0) {
 					timeElapsed = currentTime - prevTime;
@@ -225,7 +249,7 @@
 				paper.project.activeLayer.addChild(hitResult.item);
 			};
 			SelectTool.onMouseMove = function(event){
-				if (typeof event.item.isSelectable != "undefined" && !event.item.isSelectable)
+				if (event.item != null && typeof event.item.isSelectable != "undefined" && !event.item.isSelectable)
 					return;
 				if (event.item)
 					paper.project.activeLayer.selected = false;
@@ -268,8 +292,9 @@
 				});
 			};*/
 			//drawShapeButton(new paper.Point(10, 46));
-			var selectButton = new SelectButton(new paper.Point(10.5, 46.5));
-			var shapeButton = new ShapeButton(new paper.Point(10.5, 91.5));
+			var selectButton = new SelectButton(new paper.Point(10.5, 45.5));
+			var shapeButton = new ShapeButton(new paper.Point(10.5, 90.5));
+			var svgButton = new SvgButton(new paper.Point(10.5, 135.5));
 			
 			function updateButtons(){
 				selectButton.update();

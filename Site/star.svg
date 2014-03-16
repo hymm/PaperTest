@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg">
+  <g id="g6">
+     <path 
+		d="M 200,250 L 229.39,340.45 L 152.45,284.55 L 247.55,284.55 L 170.61,340.45 Z"
+		id="star"
+		style="fill:#ff0000; stroke:none; stroke-width:2" 
+	  />
+  </g>
+</svg>
