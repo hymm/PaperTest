@@ -13,8 +13,19 @@
 	        var canvas = document.getElementById('canvas1');
 			paper.setup(canvas);
 			
-			paper.project.importSVG("star.svg");
+			paper.project.importSVG("star.svg", testCall);
 			
+			function testCall(group){
+				item = group.reduce();
+				item.fillColor = '#000000';
+				console.log(item);
+				item.onFrame = function(event){
+					var done = false;
+					
+					if (done)
+						this.onFrame = null;
+				};
+			}
 			var topLeft = new paper.Point(200, 200);
 			var size = new paper.Size(150, 100);
 			var rectangle = new paper.Rectangle(topLeft, size);
@@ -57,7 +68,7 @@
 				var tempBg = new paper.Path.Rectangle(this.topLeft, size);
 				tempBg.strokeColor = new paper.Color(.2, 1);
 				
-				tempBg.selectedColor = new paper.Color(.95, .5);
+				tempBg.selectedColor = new paper.Color(.95, 1);
 				tempBg.deselectedColor = new paper.Color(.85, .5);
 				tempBg.hoverColor = new paper.Color(0.90, 1); 
 				tempBg.fillColor = tempBg.deselectedColor;
@@ -307,7 +318,7 @@
 		};
 	</script>
 </head>
-<body style="background-color:#ABDDED">
+<body style="background-image: url('Stucco.svg')">
 	<canvas id="canvas1" resize>test</canvas>
 </body>
 </html>
