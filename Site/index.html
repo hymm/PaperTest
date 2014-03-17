@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>Circle Testing</title>
+	<title>paper.js Testing</title>
 	<script type="text/javascript" src="js/paper.js"></script>
 	<script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
 	<script type="text/javascript" src="js/codemirror.js"></script>
@@ -57,8 +57,8 @@
 				var tempBg = new paper.Path.Rectangle(this.topLeft, size);
 				tempBg.strokeColor = new paper.Color(.2, 1);
 				
-				tempBg.selectedColor = new paper.Color(.95, 1);
-				tempBg.deselectedColor = new paper.Color(.85, 1);
+				tempBg.selectedColor = new paper.Color(.95, .5);
+				tempBg.deselectedColor = new paper.Color(.85, .5);
 				tempBg.hoverColor = new paper.Color(0.90, 1); 
 				tempBg.fillColor = tempBg.deselectedColor;
 				tempBg.mode = '';
@@ -124,7 +124,7 @@
 				var rectBottomRight = new paper.Path.Rectangle(topLeft.add(new paper.Point(19, 19)), size);
 				rectBottomRight.strokeColor = 'black';
 				
-				var top = new paper.Path.Line(topLeft.add(new paper.Point(2, 1)), topLeft.add(new paper.Point(20,1)));
+				var top = new paper.Path.Line(topLeft.add(new paper.Point(2, 1)), topLeft.add(new paper.Point(18,1)));
 				top.strokeColor = 'black';
 				var rectSize = 20;
 				var size = new paper.Size(rectSize, rectSize);
@@ -148,7 +148,7 @@
 			}
 			
 			SvgButton.prototype.drawJsIcon = function(topLeft){
-				var text = new paper.PointText(topLeft.add(new paper.Point(6, 14)));
+				var text = new paper.PointText(topLeft.add(new paper.Point(10.5, 14)));
 				text.justification = 'center';
 				text.fillColor = 'black';
 				text.content = 'svg';
@@ -207,7 +207,7 @@
 			};
 			ShapeTool.onMouseDrag = function(event){
 				if (tempRect != null) {
-					tempRect.remove();	
+					tempRect.remove();
 				}
 				tempRect = new paper.Path.Rectangle({topLeft: event.downPoint, bottomRight: event.point});
 				tempRect.selected = true;
@@ -249,9 +249,9 @@
 				paper.project.activeLayer.addChild(hitResult.item);
 			};
 			SelectTool.onMouseMove = function(event){
-				if (event.item != null && typeof event.item.isSelectable != "undefined" && !event.item.isSelectable)
+				if (event.item === null || (typeof event.item.isSelectable != "undefined" && !event.item.isSelectable))
 					return;
-				if (event.item)
+				if (event.item !== null)
 					paper.project.activeLayer.selected = false;
 					event.item.selected = true;
 			};
